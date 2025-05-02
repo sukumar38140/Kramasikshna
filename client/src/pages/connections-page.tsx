@@ -261,7 +261,30 @@ export default function ConnectionsPage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6">Connections</h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">Connections</h1>
+        
+        <div className="flex items-center">
+          <form onSubmit={handleSearch} className="flex space-x-2">
+            <Input
+              placeholder="Search users..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-64"
+            />
+            <Button 
+              type="submit" 
+              disabled={searchMutation.isPending || !searchQuery.trim()}
+            >
+              {searchMutation.isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Search className="h-4 w-4" />
+              )}
+            </Button>
+          </form>
+        </div>
+      </div>
       
       <Tabs 
         defaultValue="connections" 

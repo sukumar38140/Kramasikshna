@@ -7,6 +7,7 @@ import NotFound from "@/pages/not-found";
 import HomePage from "@/pages/home-page";
 import AuthPage from "@/pages/auth-page";
 import ChallengePage from "@/pages/challenge-page";
+import ChallengesPage from "@/pages/challenges-page";
 import ProgressPage from "@/pages/progress-page";
 import SharePage from "@/pages/share-page";
 import ConnectionsPage from "@/pages/connections-page";
@@ -20,6 +21,7 @@ function Router() {
       <Route path="/auth" component={AuthPage} />
       <Route path="/share/:userId/:challengeId" component={SharePage} />
       <ProtectedRoute path="/" component={HomePage} />
+      <ProtectedRoute path="/challenges" component={ChallengesPage} />
       <ProtectedRoute path="/challenges/:id" component={ChallengePage} />
       <ProtectedRoute path="/progress" component={ProgressPage} />
       <ProtectedRoute path="/connections" component={ConnectionsPage} />
