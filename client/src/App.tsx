@@ -9,6 +9,7 @@ import AuthPage from "@/pages/auth-page";
 import ChallengePage from "@/pages/challenge-page";
 import ProgressPage from "@/pages/progress-page";
 import SharePage from "@/pages/share-page";
+import ConnectionsPage from "@/pages/connections-page";
 import { ProtectedRoute } from "./lib/protected-route";
 import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "./hooks/use-auth";
@@ -21,6 +22,7 @@ function Router() {
       <ProtectedRoute path="/" component={HomePage} />
       <ProtectedRoute path="/challenges/:id" component={ChallengePage} />
       <ProtectedRoute path="/progress" component={ProgressPage} />
+      <ProtectedRoute path="/connections" component={ConnectionsPage} />
       <Route component={NotFound} />
     </Switch>
   );

@@ -65,6 +65,7 @@ export default function Navbar() {
     { path: "/", label: "Dashboard" },
     { path: "/challenges", label: "My Challenges" },
     { path: "/progress", label: "Progress" },
+    { path: "/connections", label: "Connections" },
   ];
 
   return (
