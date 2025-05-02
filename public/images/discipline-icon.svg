@@ -1,5 +1,22 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
-  <circle cx="50" cy="50" r="45" fill="none" stroke="#4F46E5" stroke-width="5" />
-  <circle cx="50" cy="50" r="35" fill="none" stroke="#4F46E5" stroke-width="3" stroke-dasharray="4,2" />
-  <path d="M35 50 L45 60 L65 40" fill="none" stroke="#4F46E5" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
+  <defs>
+    <linearGradient id="icon-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3730A3" />
+      <stop offset="100%" stop-color="#4F46E5" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Base circle -->
+  <circle cx="50" cy="50" r="45" fill="url(#icon-gradient)" />
+  <circle cx="50" cy="50" r="40" fill="white" opacity="0.1" />
+  
+  <!-- Mountain peak icon -->
+  <polygon points="30,65 50,35 70,65" fill="white" />
+  <polygon points="20,70 40,40 50,55 60,45 80,70" fill="white" opacity="0.7" />
+  
+  <!-- Check mark/Discipline path -->
+  <path d="M30,50 Q50,70 70,30" stroke="white" stroke-width="6" stroke-linecap="round" fill="none" />
+  
+  <!-- Circle border -->
+  <circle cx="50" cy="50" r="45" fill="none" stroke="white" stroke-width="2" opacity="0.3" />
 </svg>

@@ -86,7 +86,7 @@ export default function CongratsModal({
         <div className="bg-gradient-to-r from-primary-500 to-primary-600 -m-6 p-6 rounded-t-lg">
           <div className="sm:flex sm:items-start">
             <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-white sm:mx-0 sm:h-16 sm:w-16">
-              <i className="fas fa-trophy text-primary-500 text-2xl"></i>
+              <img src="/images/discipline-icon.svg" alt="Discipline icon" className="h-10 w-10 sm:h-12 sm:w-12" />
             </div>
             <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
               <DialogTitle className="text-xl font-bold text-white">
@@ -106,8 +106,9 @@ export default function CongratsModal({
         
         <div className="text-center mt-6">
           <div className="flex justify-center mb-4">
-            <div className="h-40 w-64 bg-neutral-100 rounded-lg flex items-center justify-center">
-              <i className="fas fa-certificate text-primary-500 text-6xl"></i>
+            <div className="h-48 flex flex-col items-center justify-center">
+              <img src="/images/congrats-trophy.svg" alt="Trophy" className="h-40" />
+              <div className="mt-2 text-primary-700 font-semibold text-lg">Achievement Unlocked!</div>
             </div>
           </div>
           
@@ -131,24 +132,18 @@ export default function CongratsModal({
           
           <div className="mb-4">
             <h4 className="text-lg font-medium text-neutral-900">Badges Earned</h4>
-            <div className="mt-2 flex justify-center space-x-4">
+            <div className="mt-2 flex justify-center space-x-6">
               <div className="flex flex-col items-center">
-                <div className="h-12 w-12 rounded-full bg-primary-100 flex items-center justify-center">
-                  <i className="fas fa-fire text-primary-600"></i>
-                </div>
-                <span className="mt-1 text-xs text-neutral-700">{challenge.duration}-Day Streak</span>
+                <img src="/images/streak-flame.svg" alt="Streak flame" className="h-14 w-14" />
+                <span className="mt-2 text-xs text-neutral-700 font-medium">{challenge.duration}-Day Streak</span>
               </div>
               <div className="flex flex-col items-center">
-                <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center">
-                  <i className="fas fa-check-double text-green-600"></i>
-                </div>
-                <span className="mt-1 text-xs text-neutral-700">Perfect Week</span>
+                <img src="/images/calendar-check.svg" alt="Perfect week" className="h-14 w-14" />
+                <span className="mt-2 text-xs text-neutral-700 font-medium">Perfect Week</span>
               </div>
               <div className="flex flex-col items-center">
-                <div className="h-12 w-12 rounded-full bg-yellow-100 flex items-center justify-center">
-                  <i className="fas fa-star text-yellow-600"></i>
-                </div>
-                <span className="mt-1 text-xs text-neutral-700">Dedication</span>
+                <img src="/images/achievement-badge.svg" alt="Achievement badge" className="h-14 w-14" />
+                <span className="mt-2 text-xs text-neutral-700 font-medium">Dedication</span>
               </div>
             </div>
           </div>
