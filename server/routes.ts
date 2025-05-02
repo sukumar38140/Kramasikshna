@@ -3,7 +3,16 @@ import { createServer, type Server } from "http";
 import { setupAuth } from "./auth";
 import { storage } from "./storage";
 import { z } from "zod";
-import { insertChallengeSchema, insertTaskSchema, insertTaskProgressSchema, logProgressSchema } from "@shared/schema";
+import { 
+  insertChallengeSchema, 
+  insertTaskSchema, 
+  insertTaskProgressSchema, 
+  logProgressSchema,
+  searchUsersSchema, 
+  connectionRequestSchema,
+  updateConnectionSchema,
+  shareNoteSchema
+} from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Sets up /api/register, /api/login, /api/logout, /api/user
@@ -255,6 +264,173 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
   }
+
+  // User Connection Routes
+  app.get("/api/user/connections", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    
+    try {
+      const connections = await storage.getUserConnections(req.user.id);
+      res.json(connections);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch user connections" });
+    }
+  });
+  
+  app.get("/api/user/connected-users", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    
+    try {
+      const connectedUsers = await storage.getConnectedUsers(req.user.id);
+      res.json(connectedUsers);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch connected users" });
+    }
+  });
+
+  app.post("/api/user/search", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    
+    try {
+      const validatedData = searchUsersSchema.parse(req.body);
+      const users = await storage.searchUsers(validatedData.query, req.user.id);
+      res.json(users);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: error.errors });
+      }
+      res.status(500).json({ message: "Failed to search users" });
+    }
+  });
+
+  app.post("/api/user/connections", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    
+    try {
+      const validatedData = connectionRequestSchema.parse(req.body);
+      
+      // Check if connection already exists
+      const existingConnection = await storage.getUserConnectionByIds(
+        req.user.id,
+        validatedData.connectedUserId
+      );
+      
+      if (existingConnection) {
+        return res.status(400).json({ message: "Connection already exists" });
+      }
+      
+      // Check if target user exists
+      const targetUser = await storage.getUser(validatedData.connectedUserId);
+      if (!targetUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Create connection
+      const connection = await storage.createUserConnection({
+        userId: req.user.id,
+        connectedUserId: validatedData.connectedUserId,
+        status: 'pending'
+      });
+      
+      res.status(201).json(connection);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: error.errors });
+      }
+      res.status(500).json({ message: "Failed to create connection" });
+    }
+  });
+
+  app.patch("/api/user/connections/:id", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    
+    try {
+      const connectionId = parseInt(req.params.id);
+      const validatedData = updateConnectionSchema.parse(req.body);
+      
+      // Get the connection to check if the user is the recipient
+      const connection = await storage.getUserConnections(req.user.id)
+        .then(connections => connections.find(conn => conn.id === connectionId));
+      
+      if (!connection) {
+        return res.status(404).json({ message: "Connection not found" });
+      }
+      
+      // Ensure the current user is the recipient (can update the connection)
+      if (connection.connectedUserId !== req.user.id) {
+        return res.status(403).json({ message: "Not authorized to update this connection" });
+      }
+      
+      // Update connection status
+      const updatedConnection = await storage.updateUserConnectionStatus(
+        connectionId,
+        validatedData.status
+      );
+      
+      res.json(updatedConnection);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: error.errors });
+      }
+      res.status(500).json({ message: "Failed to update connection" });
+    }
+  });
+
+  // Shared Notes Routes
+  app.get("/api/user/shared-notes", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    
+    try {
+      const sharedNotes = await storage.getSharedNotes(req.user.id);
+      res.json(sharedNotes);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch shared notes" });
+    }
+  });
+
+  app.post("/api/user/share-note", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    
+    try {
+      const validatedData = shareNoteSchema.parse(req.body);
+      
+      // Verify the task progress exists and belongs to the user
+      const progress = await storage.getTaskProgress(validatedData.taskProgressId);
+      if (!progress) {
+        return res.status(404).json({ message: "Task progress not found" });
+      }
+      
+      const task = await storage.getTask(progress.taskId);
+      if (!task) {
+        return res.status(404).json({ message: "Task not found" });
+      }
+      
+      const challenge = await storage.getChallenge(task.challengeId);
+      if (!challenge || challenge.userId !== req.user.id) {
+        return res.status(403).json({ message: "Not authorized to share this note" });
+      }
+      
+      // Verify the target user exists and is connected
+      const connection = await storage.getUserConnectionByIds(req.user.id, validatedData.sharedWithUserId);
+      if (!connection || connection.status !== 'accepted') {
+        return res.status(403).json({ message: "You can only share notes with connected users" });
+      }
+      
+      // Create the shared note
+      const sharedNote = await storage.shareNote({
+        taskProgressId: validatedData.taskProgressId,
+        sharedByUserId: req.user.id,
+        sharedWithUserId: validatedData.sharedWithUserId
+      });
+      
+      res.status(201).json(sharedNote);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: error.errors });
+      }
+      res.status(500).json({ message: "Failed to share note" });
+    }
+  });
 
   const httpServer = createServer(app);
   return httpServer;

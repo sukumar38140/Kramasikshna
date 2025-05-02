@@ -1,15 +1,17 @@
 import { 
-  users, challenges, tasks, taskProgress, badges,
+  users, challenges, tasks, taskProgress, badges, userConnections, sharedNotes,
   User, InsertUser, 
   Challenge, InsertChallenge, 
   Task, InsertTask, 
   TaskProgress, InsertTaskProgress, 
-  Badge, InsertBadge 
+  Badge, InsertBadge,
+  UserConnection, InsertUserConnection,
+  SharedNote, InsertSharedNote
 } from "@shared/schema";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
 import { db, pool } from "./db";
-import { and, desc, eq, sql } from "drizzle-orm";
+import { and, desc, eq, sql, or, ne, inArray } from "drizzle-orm";
 
 const PostgresSessionStore = connectPg(session);
 
@@ -683,6 +685,191 @@ export class DatabaseStorage implements IStorage {
     const longestStreak = Math.min(progressEntries.length, 30);
     
     return { currentStreak, longestStreak };
+  }
+
+  // User Connection methods
+  async searchUsers(query: string, currentUserId: number): Promise<Omit<User, "password">[]> {
+    const searchResults = await db
+      .select({
+        id: users.id,
+        username: users.username,
+        email: users.email,
+        name: users.name,
+        createdAt: users.createdAt
+      })
+      .from(users)
+      .where(
+        and(
+          or(
+            sql`LOWER(${users.username}) LIKE LOWER(${'%' + query + '%'})`,
+            sql`LOWER(${users.name}) LIKE LOWER(${'%' + query + '%'})`
+          ),
+          // Exclude the current user from search results
+          ne(users.id, currentUserId)
+        )
+      )
+      .limit(10);
+
+    return searchResults;
+  }
+
+  async getUserConnections(userId: number): Promise<UserConnection[]> {
+    return db
+      .select()
+      .from(userConnections)
+      .where(
+        or(
+          eq(userConnections.userId, userId),
+          eq(userConnections.connectedUserId, userId)
+        )
+      );
+  }
+
+  async getUserConnectionByIds(userId: number, connectedUserId: number): Promise<UserConnection | undefined> {
+    const [connection] = await db
+      .select()
+      .from(userConnections)
+      .where(
+        or(
+          and(
+            eq(userConnections.userId, userId),
+            eq(userConnections.connectedUserId, connectedUserId)
+          ),
+          and(
+            eq(userConnections.userId, connectedUserId),
+            eq(userConnections.connectedUserId, userId)
+          )
+        )
+      );
+    
+    return connection;
+  }
+
+  async createUserConnection(connection: InsertUserConnection): Promise<UserConnection> {
+    // Check if connection already exists
+    const existingConnection = await this.getUserConnectionByIds(
+      connection.userId,
+      connection.connectedUserId
+    );
+
+    if (existingConnection) {
+      return existingConnection;
+    }
+
+    // Create new connection
+    const [newConnection] = await db
+      .insert(userConnections)
+      .values({
+        ...connection,
+        status: 'pending'
+      })
+      .returning();
+    
+    return newConnection;
+  }
+
+  async updateUserConnectionStatus(id: number, status: string): Promise<UserConnection | undefined> {
+    const [updatedConnection] = await db
+      .update(userConnections)
+      .set({ 
+        status,
+        updatedAt: new Date()
+      })
+      .where(eq(userConnections.id, id))
+      .returning();
+    
+    return updatedConnection;
+  }
+
+  async getConnectedUsers(userId: number): Promise<Omit<User, "password">[]> {
+    // Get all accepted connections where the user is either the requester or the recipient
+    const connections = await db
+      .select()
+      .from(userConnections)
+      .where(
+        and(
+          or(
+            eq(userConnections.userId, userId),
+            eq(userConnections.connectedUserId, userId)
+          ),
+          eq(userConnections.status, 'accepted')
+        )
+      );
+    
+    if (connections.length === 0) {
+      return [];
+    }
+
+    // Extract the IDs of connected users
+    const connectedUserIds = connections.map(conn => 
+      conn.userId === userId ? conn.connectedUserId : conn.userId
+    );
+
+    // Get user details for all connected users
+    const connectedUsers = await db
+      .select({
+        id: users.id,
+        username: users.username,
+        email: users.email,
+        name: users.name,
+        createdAt: users.createdAt
+      })
+      .from(users)
+      .where(inArray(users.id, connectedUserIds));
+    
+    return connectedUsers;
+  }
+
+  // Shared Notes methods
+  async getSharedNotes(userId: number): Promise<{ note: TaskProgress, sharedBy: Omit<User, "password"> }[]> {
+    const sharedNotesData = await db
+      .select({
+        noteId: taskProgress.id,
+        taskId: taskProgress.taskId,
+        date: taskProgress.date,
+        status: taskProgress.status,
+        hoursSpent: taskProgress.hoursSpent,
+        notes: taskProgress.notes,
+        imageUrl: taskProgress.imageUrl,
+        createdAt: taskProgress.createdAt,
+        sharedById: sharedNotes.sharedByUserId,
+        sharedByUsername: users.username,
+        sharedByName: users.name,
+        sharedByEmail: users.email
+      })
+      .from(sharedNotes)
+      .innerJoin(taskProgress, eq(sharedNotes.taskProgressId, taskProgress.id))
+      .innerJoin(users, eq(sharedNotes.sharedByUserId, users.id))
+      .where(eq(sharedNotes.sharedWithUserId, userId));
+    
+    return sharedNotesData.map(data => ({
+      note: {
+        id: data.noteId,
+        taskId: data.taskId,
+        date: data.date,
+        status: data.status,
+        hoursSpent: data.hoursSpent,
+        notes: data.notes,
+        imageUrl: data.imageUrl,
+        createdAt: data.createdAt
+      },
+      sharedBy: {
+        id: data.sharedById,
+        username: data.sharedByUsername,
+        name: data.sharedByName,
+        email: data.sharedByEmail,
+        createdAt: data.createdAt
+      }
+    }));
+  }
+
+  async shareNote(note: InsertSharedNote): Promise<SharedNote> {
+    const [sharedNote] = await db
+      .insert(sharedNotes)
+      .values(note)
+      .returning();
+    
+    return sharedNote;
   }
 }
 
