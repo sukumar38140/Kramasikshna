@@ -67,45 +67,48 @@ export default function AuthPage() {
       </div>
       
       {/* Right column - hero section */}
-      <div className="flex-1 bg-primary-500 text-white p-8 flex flex-col justify-center">
-        <div className="max-w-lg mx-auto">
-          <h1 className="text-4xl font-bold mb-4">Discipline Never Fails</h1>
-          <p className="text-xl mb-6">Build Habits, Conquer Challenges, Become Unstoppable!</p>
+      <div className="flex-1 bg-primary-500 text-white p-8 flex flex-col justify-center relative overflow-hidden">
+        {/* Background pattern */}
+        <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'url(/images/hero-pattern.svg)', backgroundSize: 'cover' }}></div>
+        
+        <div className="max-w-lg mx-auto relative z-10">
+          <div className="flex items-center mb-6">
+            <img src="/images/discipline-icon.svg" alt="Discipline icon" className="w-16 h-16 mr-4" />
+            <div>
+              <h1 className="text-4xl font-bold">Discipline Never Fails</h1>
+              <p className="text-xl text-primary-100">Build Habits, Conquer Challenges, Become Unstoppable!</p>
+            </div>
+          </div>
           
-          <div className="space-y-4 mb-8">
-            <div className="flex items-start">
-              <div className="bg-white rounded-full p-2 mr-4">
-                <i className="fas fa-tasks text-primary-500"></i>
-              </div>
+          <div className="space-y-6 mb-8">
+            <div className="flex items-start bg-primary-600/30 p-4 rounded-lg backdrop-blur-sm">
+              <img src="/images/mountain-climb.svg" alt="Challenge journey" className="w-36 h-24 mr-4" />
               <div>
                 <h3 className="font-semibold text-lg">Create Challenges</h3>
-                <p className="text-primary-100">Create 21-day, 45-day, or custom duration challenges to build discipline.</p>
+                <p className="text-primary-100">Create 21-day, 45-day, or custom duration challenges to build lasting discipline and transform your habits.</p>
               </div>
             </div>
             
-            <div className="flex items-start">
-              <div className="bg-white rounded-full p-2 mr-4">
-                <i className="fas fa-lock text-primary-500"></i>
-              </div>
+            <div className="flex items-start bg-primary-600/30 p-4 rounded-lg backdrop-blur-sm">
+              <img src="/images/streak-flame.svg" alt="Streak flame" className="w-16 h-16 mr-4" />
               <div>
-                <h3 className="font-semibold text-lg">Non-Deletable Tasks</h3>
-                <p className="text-primary-100">Once committed, tasks can't be deleted. Build real discipline with real accountability.</p>
+                <h3 className="font-semibold text-lg">Maintain Streaks</h3>
+                <p className="text-primary-100">Once committed, tasks can't be deleted. Build real discipline with real accountability through consistent action.</p>
               </div>
             </div>
             
-            <div className="flex items-start">
-              <div className="bg-white rounded-full p-2 mr-4">
-                <i className="fas fa-share-alt text-primary-500"></i>
-              </div>
+            <div className="flex items-start bg-primary-600/30 p-4 rounded-lg backdrop-blur-sm">
+              <img src="/images/achievement-badge.svg" alt="Achievement badge" className="w-16 h-20 mr-4" />
               <div>
-                <h3 className="font-semibold text-lg">Share Your Progress</h3>
-                <p className="text-primary-100">Generate shareable links to display your dedication and discipline journey.</p>
+                <h3 className="font-semibold text-lg">Earn Achievements</h3>
+                <p className="text-primary-100">Track your progress, earn badges, and share your discipline journey with others for accountability.</p>
               </div>
             </div>
           </div>
           
-          <div className="bg-primary-600 p-4 rounded-lg">
-            <p className="italic text-center">
+          <div className="bg-white/10 p-6 rounded-lg backdrop-blur-sm border border-white/20">
+            <img src="/images/progress-chart.svg" alt="Progress chart" className="w-full h-auto mb-3" />
+            <p className="italic text-center text-lg">
               "Discipline is the bridge between goals and accomplishment."
             </p>
           </div>

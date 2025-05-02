@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 120" width="240" height="120">
+  <defs>
+    <linearGradient id="mountain-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4F46E5" />
+      <stop offset="100%" stop-color="#818CF8" />
+    </linearGradient>
+    <radialGradient id="sun-gradient" cx="75%" cy="25%" r="20%" fx="75%" fy="25%">
+      <stop offset="0%" stop-color="#FDB813" />
+      <stop offset="100%" stop-color="#F87171" />
+    </radialGradient>
+  </defs>
+  
+  <!-- Sun -->
+  <circle cx="180" cy="30" r="20" fill="url(#sun-gradient)" />
+  
+  <!-- Mountains -->
+  <path d="M0,120 L60,40 L90,70 L120,20 L180,80 L240,10 L240,120 Z" fill="url(#mountain-gradient)" />
+  <path d="M0,120 L30,80 L60,95 L90,60 L120,90 L150,70 L180,95 L210,75 L240,90 L240,120 Z" fill="#312E81" />
+  
+  <!-- Climber path -->
+  <path d="M30,100 Q60,85 90,90 T150,60 T210,45" fill="none" stroke="white" stroke-width="2" stroke-dasharray="4,2" />
+  
+  <!-- Flags/Checkpoints -->
+  <g fill="white">
+    <circle cx="30" cy="100" r="3" />
+    <circle cx="90" cy="90" r="3" />
+    <circle cx="150" cy="60" r="3" />
+    <circle cx="210" cy="45" r="3" />
+  </g>
+  
+  <!-- Figure/Climber -->
+  <circle cx="210" cy="45" r="5" fill="#FDB813" stroke="#F87171" stroke-width="1" />
+</svg>
