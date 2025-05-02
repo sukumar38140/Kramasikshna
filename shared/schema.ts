@@ -51,6 +51,25 @@ export const badges = pgTable("badges", {
   earnedAt: timestamp("earned_at").defaultNow().notNull(),
 });
 
+// User connections table for managing connections between users
+export const userConnections = pgTable("user_connections", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  connectedUserId: integer("connected_user_id").notNull().references(() => users.id),
+  status: text("status").notNull().default('pending'), // 'pending', 'accepted', 'rejected'
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Table for sharing task progress notes with connected users
+export const sharedNotes = pgTable("shared_notes", {
+  id: serial("id").primaryKey(),
+  taskProgressId: integer("task_progress_id").notNull().references(() => taskProgress.id),
+  sharedByUserId: integer("shared_by_user_id").notNull().references(() => users.id),
+  sharedWithUserId: integer("shared_with_user_id").notNull().references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({ 
   id: true, 
@@ -79,6 +98,18 @@ export const insertBadgeSchema = createInsertSchema(badges).omit({
   earnedAt: true
 });
 
+export const insertUserConnectionSchema = createInsertSchema(userConnections).omit({
+  id: true,
+  status: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertSharedNoteSchema = createInsertSchema(sharedNotes).omit({
+  id: true,
+  createdAt: true,
+});
+
 // Custom schemas for client-side validation
 export const createChallengeSchema = z.object({
   name: z.string().min(3, "Challenge name must be at least 3 characters"),
@@ -100,6 +131,27 @@ export const logProgressSchema = z.object({
   imageUrl: z.string().optional(),
 });
 
+// User connection schemas
+export const searchUsersSchema = z.object({
+  query: z.string().min(1, "Search query is required").max(50),
+});
+
+export const connectionRequestSchema = z.object({
+  connectedUserId: z.number().int().positive("User ID must be a positive number"),
+});
+
+export const updateConnectionSchema = z.object({
+  status: z.enum(["accepted", "rejected"], {
+    errorMap: () => ({ message: "Status must be either 'accepted' or 'rejected'" }),
+  }),
+});
+
+// Shared note schemas
+export const shareNoteSchema = z.object({
+  taskProgressId: z.number().int().positive("Task progress ID must be a positive number"),
+  sharedWithUserId: z.number().int().positive("User ID must be a positive number"),
+});
+
 // Types
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -115,6 +167,12 @@ export type TaskProgress = typeof taskProgress.$inferSelect;
 
 export type InsertBadge = z.infer<typeof insertBadgeSchema>;
 export type Badge = typeof badges.$inferSelect;
+
+export type InsertUserConnection = z.infer<typeof insertUserConnectionSchema>;
+export type UserConnection = typeof userConnections.$inferSelect;
+
+export type InsertSharedNote = z.infer<typeof insertSharedNoteSchema>;
+export type SharedNote = typeof sharedNotes.$inferSelect;
 
 export type CreateChallenge = z.infer<typeof createChallengeSchema>;
 export type LogProgress = z.infer<typeof logProgressSchema>;

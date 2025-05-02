@@ -353,6 +353,54 @@ export class MemStorage implements IStorage {
 }
 
 // Database Storage Implementation
+export interface IStorage {
+  // Users
+  getUser(id: number): Promise<User | undefined>;
+  getUserByUsername(username: string): Promise<User | undefined>;
+  createUser(user: InsertUser): Promise<User>;
+  searchUsers(query: string, currentUserId: number): Promise<Omit<User, "password">[]>;
+  
+  // Challenges
+  getChallenge(id: number): Promise<Challenge | undefined>;
+  getChallengesByUserId(userId: number): Promise<Challenge[]>;
+  createChallenge(challenge: InsertChallenge): Promise<Challenge>;
+  markChallengeCompleted(id: number): Promise<Challenge | undefined>;
+  
+  // Tasks
+  getTask(id: number): Promise<Task | undefined>;
+  getTasksByChallengeId(challengeId: number): Promise<Task[]>;
+  createTask(task: InsertTask): Promise<Task>;
+  
+  // Task Progress
+  getTaskProgress(id: number): Promise<TaskProgress | undefined>;
+  getTaskProgressByTaskId(taskId: number): Promise<TaskProgress[]>;
+  logTaskProgress(progress: InsertTaskProgress): Promise<TaskProgress>;
+  
+  // Badges
+  getBadge(id: number): Promise<Badge | undefined>;
+  getUserBadges(userId: number): Promise<Badge[]>;
+  createBadge(badge: InsertBadge): Promise<Badge>;
+  createBadgeIfNotExists(badge: InsertBadge): Promise<Badge | undefined>;
+  
+  // User Connections
+  getUserConnections(userId: number): Promise<UserConnection[]>;
+  getUserConnectionByIds(userId: number, connectedUserId: number): Promise<UserConnection | undefined>;
+  createUserConnection(connection: InsertUserConnection): Promise<UserConnection>;
+  updateUserConnectionStatus(id: number, status: string): Promise<UserConnection | undefined>;
+  getConnectedUsers(userId: number): Promise<Omit<User, "password">[]>;
+  
+  // Shared Notes
+  getSharedNotes(userId: number): Promise<{ note: TaskProgress, sharedBy: Omit<User, "password"> }[]>;
+  shareNote(note: InsertSharedNote): Promise<SharedNote>;
+  
+  // Stats & Activity
+  getUserStats(userId: number): Promise<UserStats>;
+  getUserActivity(userId: number): Promise<ActivityItem[]>;
+  
+  // Session
+  sessionStore: any;
+}
+
 export class DatabaseStorage implements IStorage {
   public sessionStore: any;
   
