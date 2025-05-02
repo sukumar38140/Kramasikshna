@@ -50,12 +50,12 @@ export default function ChallengePage() {
   });
   
   // Fetch task progress for each task
-  const taskProgressQueries = challengeData?.tasks.map(task => 
+  const taskProgressQueries = challengeData?.tasks ? challengeData.tasks.map(task => 
     useQuery<TaskProgress[]>({
       queryKey: [`/api/tasks/${task.id}/progress`],
       enabled: !!challengeData,
     })
-  ) || [];
+  ) : [];
   
   const isTaskProgressLoading = taskProgressQueries.some(query => query.isLoading);
   
@@ -160,11 +160,12 @@ export default function ChallengePage() {
   };
   
   const getTaskStatus = (task: Task, date: Date) => {
-    if (!taskProgressQueries) return "pending";
+    if (!taskProgressQueries || !challengeData || !challengeData.tasks) return "pending";
     
     const taskIndex = challengeData.tasks.findIndex(t => t.id === task.id);
-    const progressData = taskProgressQueries[taskIndex]?.data;
+    if (taskIndex === -1 || !taskProgressQueries[taskIndex]) return "pending";
     
+    const progressData = taskProgressQueries[taskIndex]?.data;
     if (!progressData) return "pending";
     
     const dateProgress = progressData.find(p => 

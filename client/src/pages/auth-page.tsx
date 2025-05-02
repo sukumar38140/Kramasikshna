@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2 } from "lucide-react";
+import { useEffect } from "react";
 
 const loginSchema = z.object({
   username: z.string().min(3, "Username must be at least 3 characters"),
@@ -33,9 +34,15 @@ export default function AuthPage() {
   const { user, loginMutation, registerMutation } = useAuth();
   const [location, navigate] = useLocation();
 
-  // Redirect if user is already logged in
+  // Use useEffect for navigation to avoid React state updates during render
+  useEffect(() => {
+    if (user) {
+      navigate("/");
+    }
+  }, [user, navigate]);
+  
+  // If user is logged in, don't render the auth page
   if (user) {
-    navigate("/");
     return null;
   }
 
